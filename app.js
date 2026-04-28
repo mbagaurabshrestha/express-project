@@ -1,3 +1,5 @@
+require('dotenv').config();  
+
 const express = require ('express');
 const app = express();
 const userModel = require("./models/user");
@@ -75,7 +77,7 @@ app.post('/register', async (req, res)=>{
             password:hash
         });
 
-        let token = jwt.sign({email:email, userid: user._id}, "shhhh");
+        let token = jwt.sign({email:email, userid: user._id}, process.env.JWT_SECRET);
         res.cookie("token", token);
         res.send("registered");
     })
@@ -91,7 +93,8 @@ app.post('/login', async (req, res)=>{
     bcrypt.compare(password, user.password, function (err, result){
         if(result) {
             
-            let token = jwt.sign({email:email, userid: user._id}, "shhhh");
+            let token = jwt.sign({email:email, userid: user._id}, process.env.JWT_SECRET);
+            
         res.cookie("token", token);
 
         res.status(200).redirect("/profile");
@@ -108,11 +111,11 @@ app.get('/logout', (req, res)=>{
 function isLoggedIn(req, res, next){
     if(req.cookies.token === "") res.redirect("/login");
     else{
-        let data = jwt.verify(req.cookies.token, "shhhh")
+        let data = jwt.verify(req.cookies.token, process.env.JWT_SECRET)
         req.user = data;
     }
     
     next();
 }
 
-app.listen(3000);
+app.listen(process.env.PORT || 3000);
